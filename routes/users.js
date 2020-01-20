@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+const auth = require('../middleware/authentication');
 const User = require('../models/User');
 
 
@@ -13,7 +14,13 @@ router.get('/users', async (req, res, next) => {
     }
 });
 
-router.get('/users/:id', async (req, res, next) => {
+//this send back your profile
+router.get('/users/me', auth, async (req, res, next) => {
+    res.send(await req.user);
+});
+
+//No longer a valid route as we don't want to filter a user by database id
+router.get('/users/:id', auth, async (req, res, next) => {
     try{
         const user = await User.findById(req.params.id);
         if (!user) return res.status(404).json({error: 'User with that id is not present'});
@@ -48,7 +55,33 @@ router.post('/users/login', async (req, res, next) => {
 
 });
 
-router.patch('/users/:id', async (req, res, next) => {
+router.post('/users/logout', auth, async (req, res, next) => {
+    try {
+        req.user.tokens = req.user.tokens.filter(token => token.token !== req.token);
+
+        await req.user.save();
+
+        res.status(200).json({user: req.user})
+    }catch(err){
+        res.status(500).send(err)
+    }
+
+});
+
+router.post('/users/logoutAll', auth, async (req, res, next) => {
+    try {
+        req.user.tokens = [];
+
+        await req.user.save();
+
+        res.status(200).json({user: req.user})
+    }catch(err){
+        res.status(500).send(err)
+    }
+
+});
+
+router.patch('/users/me', auth, async (req, res, next) => {
     //Update error handling;
     const updates = Object.keys(req.body);
     const allowedUpdates = ['name', 'age', 'email', 'password'];
@@ -57,27 +90,30 @@ router.patch('/users/:id', async (req, res, next) => {
     if (!isValidOperation) return res.status(400).json({error: "Invalid update operation"});
 
     try {
-        const user = await User.findById(req.params.id);
+        // const user = await User.findById(req.params.id);
+        //
+        // if (!user) return res.status(404).json({error: 'User with that id does not exist.'});
 
-        if (!user) return res.status(404).json({error: 'User with that id does not exist.'});
+        updates.forEach(update => req.user[update] = req.body[update]);
 
-        updates.forEach(update => user[update] = req.body[update]);
+        await req.user.save();
 
-        await user.save();
-
-        res.status(200).send(user)
+        res.status(200).json({user: req.user})
     }catch(err){
         res.status(500).send(err)
     }
 });
 
-router.delete('/users/:id', async (req, res, next) => {
+router.delete('/users/me', auth, async (req, res, next) => {
     try {
-        const deletedUser = await User.findByIdAndDelete(req.params.id);
+        // const deletedUser = await User.findByIdAndDelete(req.params.id);
+        //
+        // if (!deletedUser) return res.status(400).json({error: 'User with that id does not exist.'});
 
-        if (!deletedUser) return res.status(400).json({error: 'User with that id does not exist.'});
+        // res.status(200).send(deletedUser)
 
-        res.status(200).send(deletedUser)
+        await req.user.remove();
+        res.status(200).send({user: req.user})
     }catch(err){
         res.status(500).send(err)
     }

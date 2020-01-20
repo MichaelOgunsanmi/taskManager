@@ -3,6 +3,8 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const Task = require('./Task');
+
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -42,6 +44,15 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     }]
+}, {
+    timestamps: true
+});
+
+//Creating foreign keys relationships
+userSchema.virtual('tasks', {
+    ref: 'task',
+    localField: "_id",
+    foreignField: "owner"
 });
 
 //Since it is static, no need for this binding.
@@ -69,12 +80,30 @@ userSchema.methods.generateAuthToken = async function (){
     return token;
 };
 
+userSchema.methods.toJSON = function (){
+    const user = this;
+    const userObject = user.toObject();
+
+    delete userObject.password;
+    delete userObject.tokens;
+
+    return userObject;
+};
+
 userSchema.pre('save', async function (next) {
     const user = this;
 
     if (user.isModified('password')){
         user.password = await bcrypt.hash(user.password, 8);
     }
+
+    next();
+});
+
+userSchema.pre('remove', async function (next) {
+    const user = this;
+
+    await Task.deleteMany({owner: user._id});
 
     next();
 });
