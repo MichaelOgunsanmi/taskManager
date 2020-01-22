@@ -1,6 +1,6 @@
 {
   "dbLocal": "mongodb://127.0.0.1:27017/taskManager",
-  "dbAtlas": "mongodb+srv://ogunsanmimichael:yfTnXxp4sLvU1GD0@cluster0-7ekf6.mongodb.net/test?retryWrites=true&w=majority",
+  "dbAtlas": "mongodb+srv://ogunsanmimichael:yfTnXxp4sLvU1GD0@cluster0-7ekf6.mongodb.net/taskManagerAPI?retryWrites=true&w=majority",
   "jwtPrivateKey": "mySuperSecret",
   "PORT": 5000,
   "SENDGRID_API_KEY": "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"
