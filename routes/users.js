@@ -49,7 +49,7 @@ router.post('/users/login', async (req, res, next) => {
     try {
         const {email, password} = req.body;
 
-        const user = await User.findByCredentials(email, password)
+        const user = await User.findByCredentials(email, password);
         const token = await user.generateAuthToken();
 
         res.status(200).json({user, token})

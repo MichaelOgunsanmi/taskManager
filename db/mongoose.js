@@ -1,23 +1,20 @@
 const mongoose = require('mongoose');
 const config = require('config');
 
-if (process.env.NODE_ENV === 'development'){
-    mongoose.connect(config.get('dbLocal'), {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useFindAndModify: false,
-        useCreateIndex: true
-    }).then(() => {
-        console.log('Connected to dbLocal')
-    });
-}
+const db = process.env.NODE_ENV !== 'production' ?
+            config.get('dbLocal') : config.get('dbAtlas');
 
-mongoose.connect(config.get('dbAtlas'), {
+
+console.log(process.env.NODE_ENV, 'NODE_ENV');
+// console.log(config.get('dbLocal'), 'local')
+
+
+mongoose.connect(db, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
     useCreateIndex: true
 }).then(() => {
-    console.log('Connected to dbAtlas')
+    console.log(`Connected to ${db}`)
 });
 

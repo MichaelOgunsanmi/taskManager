@@ -14,6 +14,7 @@ router.get('/tasks', async (req, res, next) => {
     }
 });
 
+
 // /tasks/me?completed=false
 // /tasks/me?skip=20&limit=2
 // /tasks/me?sortBy=createdAt:asc
@@ -27,8 +28,6 @@ router.get('/tasks/me', auth, async (req, res, next) => {
         const parts = req.query.sortBy.split(":");
         sort[parts[0]] = parts[1].toLowerCase() === 'desc' ? -1 : 1;
     }
-
-    console.log(sort)
 
     try{
         // const tasks = await Task.find({owner: req.user._id});
